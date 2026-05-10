@@ -113,7 +113,22 @@ tbody tr:hover td{background:#fafbfd}
   </div>
 
   <div class="toolbar">
-    <div class="sw"><input type="text" id="bsc" placeholder="Buscar cliente, cidade, pedido, rota..." oninput="render()"></div>
+    <div class="sw" style="display:flex;gap:0;flex:1;min-width:260px;">
+      <select id="campo-busca" onchange="render()" style="border-radius:8px 0 0 8px;border:1px solid #e2e8f0;border-right:none;background:#f7fafc;color:#718096;font-size:12px;font-family:'Inter',sans-serif;padding:7px 10px;outline:none;cursor:pointer;flex-shrink:0;">
+        <option value="TODOS">Todos os campos</option>
+        <option value="PEDIDO">Pedido</option>
+        <option value="CLIENTE">Cliente</option>
+        <option value="CIDADE">Cidade</option>
+        <option value="ESTADO">UF</option>
+        <option value="ROTA">Rota</option>
+      </select>
+      <input type="text" id="bsc" placeholder="Buscar..." oninput="render()" style="flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:0 8px 8px 0;padding:7px 12px;font-size:12px;color:#1a202c;font-family:'Inter',sans-serif;outline:none;">
+    </div>
+    <select id="seg-filtro" onchange="render()" style="border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#718096;font-size:12px;font-family:'Inter',sans-serif;padding:7px 12px;outline:none;cursor:pointer;">
+      <option value="">Todos segmentos</option>
+      <option value="licit">Licitação</option>
+      <option value="com">Comercial</option>
+    </select>
     <button class="fb on"     id="btn-todos" onclick="setFilt('')">Todos</button>
     <button class="fb f-rota" id="btn-rota"  onclick="setFilt('Em rota')">🚚 Em rota</button>
     <button class="fb f-ag"   id="btn-ag"    onclick="setFilt('Aguardando embarque')">⏳ Aguardando</button>
@@ -264,11 +279,27 @@ function sortBy(col){
 }
 
 function render(){
-  var q=document.getElementById('bsc').value.toLowerCase();
+  var q=document.getElementById('bsc').value.toLowerCase().trim();
+  var campo=document.getElementById('campo-busca').value;
+  var seg=document.getElementById('seg-filtro').value;
   var rows=PEDIDOS.filter(function(p){
     var sn=statusNorm(p.STATUS);
     if(filtro&&sn!==filtro) return false;
-    if(q&&![p.CLIENTE,p.CIDADE,p.ESTADO,p.PEDIDO,p.ROTA,p.PRODUTO,p.SKU].some(function(v){ return (v||'').toLowerCase().indexOf(q)>=0; })) return false;
+    // Filtro de segmento
+    if(seg){
+      var lc=(p.LICITACAO||p.SEGMENTO||'').toLowerCase();
+      var isLic=lc.includes('licit');
+      if(seg==='licit'&&!isLic) return false;
+      if(seg==='com'&&isLic) return false;
+    }
+    // Busca por campo específico ou todos
+    if(q){
+      if(campo==='TODOS'){
+        if(![p.CLIENTE,p.CIDADE,p.ESTADO,p.PEDIDO,p.ROTA,p.PRODUTO,p.SKU].some(function(v){ return (v||'').toLowerCase().indexOf(q)>=0; })) return false;
+      } else {
+        if((p[campo]||'').toLowerCase().indexOf(q)<0) return false;
+      }
+    }
     return true;
   });
 
