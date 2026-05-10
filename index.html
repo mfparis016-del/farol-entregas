@@ -154,6 +154,7 @@ tbody tr:hover td{background:#fafbfd}
         <th onclick="sortBy('ROTA')"         id="th-ROTA">Rota</th>
         <th onclick="sortBy('EMBARQUE')"     id="th-EMBARQUE">Embarque</th>
         <th onclick="sortBy('PREV_ENTREGA')" id="th-PREV_ENTREGA">Prev. Entrega</th>
+        <th onclick="sortBy('FRETE_RATEIO')" id="th-FRETE_RATEIO">Frete (R$)</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -199,6 +200,12 @@ function fmtDt(v){
     }
   }catch(e){}
   return v;
+}
+
+function fmtFrete(v){
+  var n=parseFloat(v);
+  if(isNaN(n)||n<=0) return '<span style="color:#cbd5e0;">—</span>';
+  return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 function sincronizar(){
@@ -250,7 +257,7 @@ function sortData(arr){
   return arr.slice().sort(function(a,b){
     var va,vb;
     if(sortCol==='EMBARQUE'||sortCol==='PREV_ENTREGA'){ va=parseDt(fmtDt(a[sortCol])); vb=parseDt(fmtDt(b[sortCol])); }
-    else if(sortCol==='PESO'){ va=parseFloat(a[sortCol])||0; vb=parseFloat(b[sortCol])||0; }
+    else if(sortCol==='PESO'||sortCol==='FRETE_RATEIO'){ va=parseFloat(a[sortCol])||0; vb=parseFloat(b[sortCol])||0; }
     else if(sortCol==='PEDIDO'){ va=parseInt(a[sortCol])||0; vb=parseInt(b[sortCol])||0; }
     else if(sortCol==='STATUS'){ va=statusNorm(a[sortCol]); vb=statusNorm(b[sortCol]); }
     else{ va=(a[sortCol]||'').toLowerCase(); vb=(b[sortCol]||'').toLowerCase(); }
@@ -346,6 +353,7 @@ function render(){
       +'<td><span class="tag-rota" title="'+(p.ROTA||'')+'">'+( p.ROTA||'<span class="dim">—</span>' )+'</span></td>'
       +'<td style="color:#64748b;">'+emb+'</td>'
       +'<td style="color:#64748b;">'+prev+'</td>'
+      +'<td style="color:#374151;font-weight:500;white-space:nowrap;">'+fmtFrete(p.FRETE_RATEIO)+'</td>'
       +'</tr>';
   }).join('');
 }
